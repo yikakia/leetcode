@@ -23,62 +23,62 @@
 - `1 <= nums[i] <= 10^4`
 
 
-## 用递归直接处理
+## 变更下标
 ```go
-func reformatNumber(number string) string {
-	res := make([]rune, 0, len(number))
-	for _, char := range number {
-		if char != ' ' && char != '-' {
-			res = append(res, char)
+func maximumUniqueSubarray(nums []int) int {
+	occurMap := make(map[int]int)
+	res := 0
+	start := 0
+	count := make([]int, len(nums))
+	for i, num := range nums {
+		if index, ok := occurMap[num]; ok {
+			if start <= index {
+				start = index + 1
+				count[i] = sum(nums[index+1 : i]...)
+			} else {
+				count[i] = count[i-1]
+			}
+		} else {
+			if i != 0 {
+				count[i] = count[i-1]
+			}
+		}
+		occurMap[num] = i
+		count[i] += num
+		if count[i] > res {
+			res = count[i]
 		}
 	}
-	if len(res) < 3 {
-		return string(res)
-	} else if len(res) == 4 {
-		tmp := res[2:]
-		res = []rune(string(res[:2]))
-		res = append(res, '-')
-		res = append(res, tmp...)
-		return string(res)
+	return res
+}
+func sum(a ...int) int {
+	res := 0
+	for _, num := range a {
+		res += num
 	}
-	tmp := res[3:]
-	res = []rune(string(res[:3]))
-	res = append(res, '-')
-	res = append(res, []rune(reformatNumber(string(tmp)))...)
-	if res[len(res)-1] == '-' {
-		res = res[:len(res)-1]
-	}
-	return string(res)
+	return res
 }
 func test() {
 	type TestType struct {
-		number string
-		want   string
+		nums []int
+		want int
 	}
 	ts := []TestType{
 		TestType{
-			number: "1-23-45 6",
-			want:   "123-456",
+			nums: []int{4, 2, 4, 5, 6},
+			want: 17,
 		},
 		TestType{
-			number: "123 4-567",
-			want:   "123-45-67",
+			nums: []int{5, 2, 1, 2, 5, 2, 1, 2, 5},
+			want: 8,
 		},
 		TestType{
-			number: "123 4-5678",
-			want:   "123-456-78",
-		},
-		TestType{
-			number: "12",
-			want:   "12",
-		},
-		TestType{
-			number: "--17-5 229 35-39475 ",
-			want:   "175-229-353-94-75",
+			nums: []int{215, 436, 338, 139, 220, 815, 150, 720, 64, 721, 811, 32, 411, 901, 120, 657, 311, 429, 73, 825, 217, 173, 256, 805, 864, 459, 306, 426, 855, 425, 893, 557, 571, 255, 185, 300, 976, 388, 275, 301, 263, 834, 228, 116, 959, 109, 369, 162, 38, 384, 27, 387, 183, 773, 419, 409, 437, 799, 378, 977, 735, 618, 783, 941, 132, 944, 469, 633, 292, 660, 890, 22, 817, 356, 782, 406, 427, 179, 316, 574, 21, 492, 966, 962, 162, 27, 422, 451, 568, 187, 809, 626, 29, 758, 713, 294, 555, 104, 556, 689, 950, 983, 224, 811, 587, 926, 77, 478, 122, 333, 849, 504, 702, 94, 28, 837, 483, 266, 48, 147, 28, 568, 785, 573, 332, 207, 38, 442, 38, 852, 190, 648, 715, 32, 184, 361, 986, 466, 740, 980, 816, 875, 199, 687, 415, 619, 472, 52, 634, 348, 689, 325, 39, 870, 22, 638, 705, 282, 433, 272, 108, 755, 307, 279, 897, 317, 1, 935, 550, 335, 690, 614, 502, 94, 872, 269, 318, 735, 651, 71, 506, 886, 359, 2, 38, 320, 219, 274, 308, 715, 464, 252, 329, 932, 726, 196, 834, 869, 251, 17, 248, 60, 99, 911, 271, 665, 783, 140, 603, 621, 827, 975, 807, 459, 853, 605, 537, 550, 384, 444, 732, 614, 606, 866, 290, 630, 665, 746, 787, 410, 532, 27, 271, 457, 979, 774, 97, 238, 760, 205, 306, 679, 811, 857, 849, 689, 512, 927, 151, 772, 219, 251, 387, 747, 961, 21, 115, 511, 393, 791, 5, 204, 173, 280, 251, 468, 789, 197, 909, 710, 822, 731, 539, 121, 310, 806, 836, 6, 455, 305, 50, 38, 289, 33, 666, 78, 670, 292, 241, 311, 320, 173, 141, 962, 207, 494, 314, 779, 120, 185, 303, 454, 794, 962, 886, 115, 647, 519, 241, 808, 787, 846, 878, 413, 180, 465, 501, 194, 86, 176, 201, 537, 257, 602, 604, 857, 68, 545, 143, 396, 733, 459, 997, 559, 783, 64, 931, 486, 452, 611, 41, 921, 506, 967, 449, 23, 754, 564, 130, 830, 905, 678, 388, 307, 464, 818, 998, 970, 891, 204, 754, 887, 17, 495, 339, 40, 494, 292, 823, 746, 842, 39, 524, 507, 746, 764, 488, 955, 670, 35, 99, 387, 147, 370, 261, 848, 605, 695, 406, 408, 84, 657, 320, 982, 564, 424, 742, 447, 284, 658, 589, 930, 765, 467, 260, 552, 171, 903, 869},
+			want: 40402,
 		},
 	}
 	for i, t := range ts {
-		get := reformatNumber(t.number)
+		get := maximumUniqueSubarray(t.nums)
 		if t.want != get {
 			// 填充输出格式
 			fmt.Printf("i:%d %+v get:%v\n", i, t, get)
@@ -88,7 +88,55 @@ func test() {
 
 }
 ```
->执行用时: 0 ms
-内存消耗: 3 MB
+>执行用时: 700 ms
+内存消耗: 8.3 MB
 
-就是先删空格和破折号，再根据题意拆分。为了简单于是就用了递归。
+简单地说就是用一个数组记录它为末尾的子序列的值。用一个map来记录之前遇到了的数的下标。
+
+遇到了之前出现的数，当它在当前序列中出现过的话，那么它的值就应该是之前出现过的位置的下一个位置到当前位置。
+
+如果不在当前序列中，那么就是之前的元素的值加上当前元素的值。
+
+于是就是求前缀和了。但是不知道为啥出了错，就是最后我的`test`里面的最后一个样例。很奇怪，因此就用简单`sum`过了。
+
+## 前缀和-1
+```go
+func maximumUniqueSubarray(nums []int) int {
+	occurMap := make(map[int]int)
+	res := 0
+	start := 0
+	count := make([]int, len(nums))
+	preSum := make([]int, len(nums))
+	for i, num := range nums {
+		preSum[i] = num
+		if i == 0 {
+			continue
+		}
+		preSum[i] += preSum[i-1]
+	}
+	for i, num := range nums {
+		if index, ok := occurMap[num]; ok {
+			if start <= index {
+				start = index + 1
+				count[i] = preSum[i-1] - preSum[index]
+			} else {
+				count[i] = count[i-1]
+			}
+		} else {
+			if i != 0 {
+				count[i] = count[i-1]
+			}
+		}
+		occurMap[num] = i
+		count[i] += num
+		if count[i] > res {
+			res = count[i]
+		}
+	}
+	return res
+}
+```
+>执行用时: 212 ms
+内存消耗: 9.2 MB
+
+这是提前算好前缀和，然后求。虽然可行，但是数据量大的话有可能会溢出。所以还是得用滑动窗口最好。
