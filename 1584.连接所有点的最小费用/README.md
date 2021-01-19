@@ -141,3 +141,192 @@ func calDis(a, b []int) int {
 内存消耗: 39.3 MB
 
 就是简单的 Kruskal 算法 。
+
+### Prim 算法
+```go
+func minCostConnectPoints(points [][]int) int {
+	type Point struct {
+		local []int
+		dis   int
+	}
+	n := len(points)
+	_points := make([]Point, n)
+	for i := range points {
+		_points[i].local = points[i]
+		_points[i].dis = calDis(points[0], points[i])
+	}
+
+	notvisited := map[int]bool{}
+	for i := range _points[1:] {
+		notvisited[i+1] = true
+	}
+
+	res := 0
+	for range _points[1:] {
+		nextPoint := -1
+		minDist := math.MaxInt32
+		for index := range notvisited {
+			pa := _points[index]
+			if pa.dis < minDist {
+				nextPoint = index
+				minDist = pa.dis
+			}
+		}
+		res += minDist
+		delete(notvisited, nextPoint)
+		for i := range notvisited {
+			p := _points[i]
+			_points[i].dis = min(p.dis, calDis(p.local, points[nextPoint]))
+		}
+	}
+
+	return res
+}
+func min(a, b int) int {
+	if a > b {
+		return b
+	}
+	return a
+}
+func abs(a int) int {
+	if a < 0 {
+		return -a
+	}
+	return a
+}
+func calDis(a, b []int) int {
+	if len(a) != 2 || len(b) != 2 {
+		return 0
+	}
+	return abs(a[0]-b[0]) + abs(a[1]-b[1])
+}
+```
+>执行用时: 88 ms
+内存消耗: 4.4 MB
+
+稠密图果然还是 **Prim** 算法能够更快啊，特别是这种强连通图，时间和空间都是 **Kruskal** 算法的$\frac{1}{10}$特别是我还专门另外开结构体储存了点的坐标和距已知的点集的最小距离。
+
+总的来说就是维护一个未访问过的点集，每次找到其中的最小的距离，然后更新对应的距离即可。
+
+
+那我不另外开结构体是不是更加省空间？
+
+### Prim 的小修改版
+```go
+func minCostConnectPoints(points [][]int) int {
+	n := len(points)
+	dis := make([]int, n)
+	for i := range points {
+		dis[i] = calDis(points[0], points[i])
+	}
+
+	notvisited := map[int]bool{}
+	for i := range dis[1:] {
+		notvisited[i+1] = true
+	}
+
+	res := 0
+	for range dis[1:] {
+		nextPoint := -1
+		minDist := math.MaxInt32
+		for index := range notvisited {
+			if dis[index] < minDist {
+				nextPoint = index
+				minDist = dis[index]
+			}
+		}
+		res += minDist
+		delete(notvisited, nextPoint)
+		for i := range notvisited {
+			dis[i] = min(dis[i], calDis(points[i], points[nextPoint]))
+		}
+	}
+
+	return res
+}
+func min(a, b int) int {
+	if a > b {
+		return b
+	}
+	return a
+}
+func abs(a int) int {
+	if a < 0 {
+		return -a
+	}
+	return a
+}
+func calDis(a, b []int) int {
+	if len(a) != 2 || len(b) != 2 {
+		return 0
+	}
+	return abs(a[0]-b[0]) + abs(a[1]-b[1])
+}
+```
+>执行用时: 80 ms
+内存消耗: 4.2 MB
+
+区别并不大啊。
+
+### Prim 不用 map 
+```go
+func minCostConnectPoints(points [][]int) int {
+	n := len(points)
+	dis := make([]int, n)
+	for i := range points {
+		dis[i] = calDis(points[0], points[i])
+	}
+
+	notvisited := make([]bool, n)
+	for i := range dis[1:] {
+		notvisited[i+1] = true
+	}
+
+	res := 0
+	for range dis[1:] {
+		nextPoint := -1
+		minDist := math.MaxInt32
+		for index, v := range notvisited {
+			if v == false {
+				continue
+			}
+			if dis[index] < minDist {
+				nextPoint = index
+				minDist = dis[index]
+			}
+		}
+		res += minDist
+		notvisited[nextPoint] = false
+		for i, v := range notvisited {
+			if v == false {
+				continue
+			}
+			dis[i] = min(dis[i], calDis(points[i], points[nextPoint]))
+		}
+	}
+
+	return res
+}
+func min(a, b int) int {
+	if a > b {
+		return b
+	}
+	return a
+}
+func abs(a int) int {
+	if a < 0 {
+		return -a
+	}
+	return a
+}
+func calDis(a, b []int) int {
+	if len(a) != 2 || len(b) != 2 {
+		return 0
+	}
+	return abs(a[0]-b[0]) + abs(a[1]-b[1])
+}
+```
+>执行用时: 20 ms
+内存消耗: 3.7 MB
+
+果然，在用下标做键的情况下还是用数组要快得多，即使在需要遍历的情况下也是如此。只有没有下标的情况下用哈希表才比较好。
