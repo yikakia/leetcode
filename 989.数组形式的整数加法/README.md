@@ -53,5 +53,52 @@
 ## 
 ```go
 
+func addToArrayForm(A []int, K int) []int {
+	if K == 0 {
+		return A
+	}
+	ks := []int{}
+	for K != 0 {
+		ks = append(ks, K%10)
+		K /= 10
+	}
+	reverse(A)
+	if len(ks) > len(A) {
+		A, ks = ks, A
+	}
+	A = append(A, 0)
+	overflow := 0
+	for i := range A {
+		if i < len(ks) {
+			A[i] += ks[i]
+		} else if overflow == 0 {
+			break
+		}
+		A[i] += overflow
+		if A[i] > 9 {
+			overflow = 1
+			A[i] %= 10
+		} else {
+			overflow = 0
+		}
+	}
+	if A[len(A)-1] == 0 {
+		A = A[:len(A)-1]
+	}
+	reverse(A)
+	return A
+}
+
+func reverse(a []int) {
+	n := len(a)
+	end := n / 2
+	for i := 0; i < end; i++ {
+		a[i], a[n-i-1] = a[n-i-1], a[i]
+	}
+}
+
 ```
->
+>执行用时: 28 ms
+内存消耗: 6.6 MB
+
+就是模拟运算，最后来个判断即可
