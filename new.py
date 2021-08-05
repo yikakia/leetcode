@@ -298,8 +298,8 @@ def gen_files(url: str) -> None:
     gen_gofile(filepath, title, url, func)
 
     # 生成 go.mod 文件
-    filepath = os.path.join(base_dir, newfolder, "go.mod")
-    gen_go_mod(filepath)
+    # filepath = os.path.join(base_dir, newfolder, "go.mod")
+    # gen_go_mod(filepath)
     return
 
 
