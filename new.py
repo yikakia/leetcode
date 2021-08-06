@@ -1,4 +1,4 @@
-#!/d/DevEnv/Python/Python38/python
+#! python3
 # # -*- coding: UTF-8 -*-
 import os
 import requests, json
